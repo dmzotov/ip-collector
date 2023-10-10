@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    <changeSet id="create ip table" dbms="postgresql,h2" author="dmzotov">
+        <sql>
+            CREATE TABLE ip.ip (
+                                   id BIGINT PRIMARY KEY,
+                                   ip VARCHAR(40) NOT NULL,
+                                   country_code VARCHAR(2),
+                                   country_name VARCHAR(30),
+                                   created TIMESTAMP NOT NULL,
+                                   updated TIMESTAMP NOT NULL
+            );
+
+            COMMENT ON TABLE ip.ip IS 'IP addresses';
+            COMMENT ON COLUMN ip.ip.id IS 'ID of the IP address';
+            COMMENT ON COLUMN ip.ip.ip IS 'IP address';
+            COMMENT ON COLUMN ip.ip.country_code IS 'Country code (2 symbols)';
+            COMMENT ON COLUMN ip.ip.country_name IS 'Country full name';
+            COMMENT ON COLUMN ip.ip.created IS 'Creation date and time';
+            COMMENT ON COLUMN ip.ip.updated IS 'Update date and time';
+        </sql>
+    </changeSet>
+
+    <changeSet id="create request_history table" dbms="postgresql,h2" author="dmzotov">
+        <sql>
+            CREATE TABLE ip.request_history (
+                                   id BIGSERIAL PRIMARY KEY,
+                                   ip_id BIGINT CONSTRAINT request_history_ip_id_fk REFERENCES ip.ip(id),
+                                   source_data TEXT NOT NULL,
+                                   source_system VARCHAR(128),
+                                   created TIMESTAMP NOT NULL
+            );
+
+            COMMENT ON TABLE ip.request_history IS 'History of requests to fetch data for IP addresses';
+            COMMENT ON COLUMN ip.request_history.id IS 'ID of the request';
+            COMMENT ON COLUMN ip.request_history.ip_id IS 'ID of the IP address';
+            COMMENT ON COLUMN ip.request_history.source_data IS 'Raw response';
+            COMMENT ON COLUMN ip.request_history.source_system IS 'The source of fetched data';
+            COMMENT ON COLUMN ip.request_history.created IS 'Creation date and time';
+        </sql>
+    </changeSet>
+</databaseChangeLog>
