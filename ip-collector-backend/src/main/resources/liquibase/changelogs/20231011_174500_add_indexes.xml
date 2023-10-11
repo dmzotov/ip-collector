@@ -8,8 +8,13 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
-
-    <include file="changelogs/20231010_094000_initial.xml" relativeToChangelogFile="true"/>
-    <include file="changelogs/20231011_174500_add_indexes.xml" relativeToChangelogFile="true"/>
-
+    <changeSet id="add indexes" dbms="postgresql,h2" author="dmzotov">
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            CREATE EXTENSION IF NOT EXISTS btree_gin;
+            CREATE INDEX IF NOT EXISTS ip_country_code_idx ON ip.ip USING gin(country_code gin_trgm_ops);
+            CREATE INDEX IF NOT EXISTS ip_country_name_idx ON ip.ip USING gin(country_name gin_trgm_ops);
+            CREATE INDEX IF NOT EXISTS ip_created_idx ON ip.ip USING btree(created);
+        </sql>
+    </changeSet>
 </databaseChangeLog>

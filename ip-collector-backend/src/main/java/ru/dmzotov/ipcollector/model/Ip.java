@@ -32,7 +32,7 @@ public class Ip {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 
-    @OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "ip_id")
     private List<RequestHistory> history;
 }

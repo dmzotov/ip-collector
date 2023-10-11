@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Schema(description = "IP addresses")
@@ -26,7 +25,4 @@ public class IpDto {
 
     @Schema(description = "Update date and time")
     private LocalDateTime updated;
-
-    @Schema(description = "History of requests to fetch data for the IP address")
-    private List<RequestHistoryDto> history;
 }
