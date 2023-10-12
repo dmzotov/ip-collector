@@ -7,16 +7,15 @@ import ru.dmzotov.ipcollector.dto.IpSearchRequestDto;
 import ru.dmzotov.ipcollector.dto.RequestHistoryDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IpService {
     /**
      * Get the ip address information and update it if necessary
-     * @param ip            the ip address
+     * @param ipString      the ip address
      * @param forceUpdate   update ip address information immediately
      * @return              the ip address information
      */
-    Optional<IpDto> getIp(String ip, boolean forceUpdate);
+    IpDto getIp(String ipString, boolean forceUpdate);
 
     /**
      * Search ip addresses by the given filter
@@ -28,8 +27,8 @@ public interface IpService {
 
     /**
      * Search full request history for the given ip address
-     * @param ip    the ip address
-     * @return      List of request history of the ip address
+     * @param ipString  the ip address
+     * @return          List of request history of the ip address
      */
-    List<RequestHistoryDto> findRequestHistoryByIp(String ip);
+    List<RequestHistoryDto> findRequestHistoryByIp(String ipString);
 }

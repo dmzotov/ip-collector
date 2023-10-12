@@ -1,5 +1,6 @@
 package ru.dmzotov.ipcollector.model;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,6 +12,7 @@ import java.util.List;
 @Data
 @Table
 @Entity
+@Builder
 public class Ip {
     @Id
     private Long id;
