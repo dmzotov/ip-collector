@@ -1,5 +1,6 @@
 package ru.dmzotov.ipcollector.model;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import ru.dmzotov.ipcollector.dto.enums.IpSource;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Table
 @Entity
+@Builder
 public class RequestHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

@@ -1,3 +1,4 @@
 configuration:
   url:
     ipwho: http://ipwho.is
+    ipapi: http://ip-api.com/json

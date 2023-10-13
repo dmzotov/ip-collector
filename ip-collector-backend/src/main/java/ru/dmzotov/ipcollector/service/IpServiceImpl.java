@@ -1,5 +1,6 @@
 package ru.dmzotov.ipcollector.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -7,17 +8,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.dmzotov.ipcollector.client.IpapiClient;
+import ru.dmzotov.ipcollector.client.IpwhoClient;
+import ru.dmzotov.ipcollector.client.dto.IpapiResponseDto;
+import ru.dmzotov.ipcollector.client.dto.IpwhoResponseDto;
 import ru.dmzotov.ipcollector.dto.IpDto;
 import ru.dmzotov.ipcollector.dto.IpSearchRequestDto;
 import ru.dmzotov.ipcollector.dto.RequestHistoryDto;
+import ru.dmzotov.ipcollector.dto.enums.IpSource;
 import ru.dmzotov.ipcollector.exceptions.IncorrectIpException;
 import ru.dmzotov.ipcollector.exceptions.NotFoundException;
 import ru.dmzotov.ipcollector.mapper.IpMapper;
 import ru.dmzotov.ipcollector.mapper.RequestHistoryMapper;
 import ru.dmzotov.ipcollector.model.Ip;
+import ru.dmzotov.ipcollector.model.RequestHistory;
 import ru.dmzotov.ipcollector.repository.IpRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,6 +39,9 @@ public class IpServiceImpl implements IpService {
     private static final int EXPIRE_DAYS = 30;
     private final RequestHistoryMapper requestHistoryMapper;
     private final IpRepository ipRepository;
+    private final ObjectMapper objectMapper;
+    private final IpwhoClient ipwhoClient;
+    private final IpapiClient ipapiClient;
     private final IpMapper ipMapper;
 
     @Override
@@ -69,7 +80,48 @@ public class IpServiceImpl implements IpService {
     }
 
     private void update(Ip ip) {
-        // todo
+        if (!updateByIpwho(ip) || !updateByIpapi(ip)) {
+            log.error("Failed to update ip {}", ip.getIp());
+        }
+    }
+
+    private boolean updateByIpwho(Ip ip) {
+        try {
+            IpwhoResponseDto response = ipwhoClient.getIpInfo(ip.getIp());
+            ip.setUpdated(LocalDateTime.now());
+            ip.setCountryCode(response.getCountryCode());
+            ip.setCountryName(response.getCountry());
+            addHistory(ip, IpSource.IPWHO, objectMapper.writeValueAsString(response));
+            return true;
+        } catch (Exception e) {
+            log.info("Can't load ip info by ipwho service");
+            return false;
+        }
+    }
+
+    private boolean updateByIpapi(Ip ip) {
+        try {
+            IpapiResponseDto response = ipapiClient.getIpInfo(ip.getIp());
+            ip.setUpdated(LocalDateTime.now());
+            ip.setCountryCode(response.getCountryCode());
+            ip.setCountryName(response.getCountry());
+            addHistory(ip, IpSource.IPAPI, objectMapper.writeValueAsString(response));
+            return true;
+        } catch (Exception e) {
+            log.info("Can't load ip info by ipwho service");
+            return false;
+        }
+    }
+
+    private void addHistory(Ip ip, IpSource ipSource, String json) {
+        if (ip.getHistory() == null) {
+            ip.setHistory(new ArrayList<>());
+        }
+        ip.getHistory().add(RequestHistory.builder()
+                .ipId(ip.getId())
+                .sourceSystem(ipSource)
+                .sourceData(json)
+                .build());
     }
 
     private Long getIpId(String ip) {

@@ -8,5 +8,5 @@ import ru.dmzotov.ipcollector.client.dto.IpwhoResponseDto;
 @FeignClient(name = "IpwhoClient", url = "${configuration.url.ipwho}")
 public interface IpwhoClient {
     @GetMapping("/{ip}")
-    IpwhoResponseDto getIp(@PathVariable String ip);
+    IpwhoResponseDto getIpInfo(@PathVariable String ip);
 }
