@@ -48,7 +48,7 @@ public class IpServiceImpl implements IpService {
     @Transactional
     public IpDto getIp(String ipString, boolean forceUpdate) {
         Ip ip = ipRepository.findById(getIpId(ipString)).orElse(createIp(ipString));
-        if (ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS))) {
+        if (ip.getUpdated() == null || ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS))) {
             update(ip);
         }
         return ipMapper.toDto(ip);
