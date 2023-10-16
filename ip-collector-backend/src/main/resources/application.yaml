@@ -1,3 +1,15 @@
+server:
+  port: 9990
+  servlet:
+    context-path: /ip/
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    password: ${DB_USER}
+    username: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
 configuration:
   url:
     ipwho: http://ipwho.is

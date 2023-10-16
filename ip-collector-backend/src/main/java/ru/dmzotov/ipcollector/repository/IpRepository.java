@@ -1,7 +1,7 @@
 package ru.dmzotov.ipcollector.repository;
 
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import ru.dmzotov.ipcollector.model.Ip;
+import ru.dmzotov.ipcollector.entity.Ip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -20,8 +20,8 @@ import ru.dmzotov.ipcollector.exceptions.IncorrectIpException;
 import ru.dmzotov.ipcollector.exceptions.NotFoundException;
 import ru.dmzotov.ipcollector.mapper.IpMapper;
 import ru.dmzotov.ipcollector.mapper.RequestHistoryMapper;
-import ru.dmzotov.ipcollector.model.Ip;
-import ru.dmzotov.ipcollector.model.RequestHistory;
+import ru.dmzotov.ipcollector.entity.Ip;
+import ru.dmzotov.ipcollector.entity.RequestHistory;
 import ru.dmzotov.ipcollector.repository.IpRepository;
 
 import java.time.LocalDateTime;

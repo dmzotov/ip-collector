@@ -1,11 +1,13 @@
-package ru.dmzotov.ipcollector.model;
+package ru.dmzotov.ipcollector.entity;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +15,8 @@ import java.util.List;
 @Table
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Ip {
     @Id
     private Long id;
