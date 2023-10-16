@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import ru.dmzotov.ipcollector.dto.IpDto;
 import ru.dmzotov.ipcollector.dto.IpSearchRequestDto;
 import ru.dmzotov.ipcollector.dto.RequestHistoryDto;
+import ru.dmzotov.ipcollector.entity.Ip;
 
 import java.util.List;
 
@@ -31,4 +32,17 @@ public interface IpService {
      * @return          List of request history of the ip address
      */
     List<RequestHistoryDto> findRequestHistoryByIp(String ipString);
+
+    /**
+     * Create and save ip object
+     * @param ipString  the ip address
+     * @return          created ip object
+     */
+    Ip createIp(String ipString);
+
+    /**
+     * Update information about ip address
+     * @param ip         the ip address object
+     */
+    void update(Ip ip);
 }

@@ -3,6 +3,8 @@ package ru.dmzotov.ipcollector.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -44,12 +46,15 @@ public class IpServiceImpl implements IpService {
     private final IpapiClient ipapiClient;
     private final IpMapper ipMapper;
 
+    @Lazy
+    @Autowired
+    private IpService ipService;
+
     @Override
-    @Transactional
     public IpDto getIp(String ipString, boolean forceUpdate) {
-        Ip ip = ipRepository.findById(getIpId(ipString)).orElse(createIp(ipString));
-        if (ip.getUpdated() == null || ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS))) {
-            update(ip);
+        Ip ip = ipRepository.findById(getIpId(ipString)).orElse(ipService.createIp(ipString));
+        if (ip.getUpdated() != null && ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS))) {
+            ipService.update(ip);
         }
         return ipMapper.toDto(ip);
     }
@@ -70,7 +75,9 @@ public class IpServiceImpl implements IpService {
                 .orElseThrow(() -> new NotFoundException("ip"));
     }
 
-    private Ip createIp(String ipString) {
+    @Override
+    @Transactional
+    public Ip createIp(String ipString) {
         Ip ip = Ip.builder()
                 .id(getIpId(ipString))
                 .ip(ipString)
@@ -79,7 +86,9 @@ public class IpServiceImpl implements IpService {
         return ipRepository.save(ip);
     }
 
-    private void update(Ip ip) {
+    @Override
+    @Transactional
+    public void update(Ip ip) {
         if (!updateByIpwho(ip) || !updateByIpapi(ip)) {
             log.error("Failed to update ip {}", ip.getIp());
         }
@@ -94,7 +103,7 @@ public class IpServiceImpl implements IpService {
             addHistory(ip, IpSource.IPWHO, objectMapper.writeValueAsString(response));
             return true;
         } catch (Exception e) {
-            log.info("Can't load ip info by ipwho service");
+            log.info("Can't load ip info by ipwho service: {}", e.getMessage());
             return false;
         }
     }
@@ -108,7 +117,7 @@ public class IpServiceImpl implements IpService {
             addHistory(ip, IpSource.IPAPI, objectMapper.writeValueAsString(response));
             return true;
         } catch (Exception e) {
-            log.info("Can't load ip info by ipwho service");
+            log.info("Can't load ip info by ipwho service: {}", e.getMessage());
             return false;
         }
     }
