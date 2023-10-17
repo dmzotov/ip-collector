@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RequestHistory {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="request_history_id_seq")
+    @SequenceGenerator(name="request_history_id_seq", sequenceName="request_history_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "ip_id")

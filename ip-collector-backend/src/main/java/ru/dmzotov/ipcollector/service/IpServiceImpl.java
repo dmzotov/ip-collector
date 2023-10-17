@@ -18,12 +18,12 @@ import ru.dmzotov.ipcollector.dto.IpDto;
 import ru.dmzotov.ipcollector.dto.IpSearchRequestDto;
 import ru.dmzotov.ipcollector.dto.RequestHistoryDto;
 import ru.dmzotov.ipcollector.dto.enums.IpSource;
+import ru.dmzotov.ipcollector.entity.Ip;
+import ru.dmzotov.ipcollector.entity.RequestHistory;
 import ru.dmzotov.ipcollector.exceptions.IncorrectIpException;
 import ru.dmzotov.ipcollector.exceptions.NotFoundException;
 import ru.dmzotov.ipcollector.mapper.IpMapper;
 import ru.dmzotov.ipcollector.mapper.RequestHistoryMapper;
-import ru.dmzotov.ipcollector.entity.Ip;
-import ru.dmzotov.ipcollector.entity.RequestHistory;
 import ru.dmzotov.ipcollector.repository.IpRepository;
 
 import java.time.LocalDateTime;
@@ -51,12 +51,13 @@ public class IpServiceImpl implements IpService {
     private IpService ipService;
 
     @Override
+    @Transactional
     public IpDto getIp(String ipString, boolean forceUpdate) {
-        Ip ip = ipRepository.findById(getIpId(ipString)).orElse(ipService.createIp(ipString));
-        if (ip.getUpdated() != null && ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS))) {
+        Ip ip = ipRepository.findById(getIpId(ipString)).orElseGet(() -> ipService.createIp(ipString));
+        if (forceUpdate || (ip.getUpdated() != null && ip.getUpdated().isBefore(LocalDateTime.now().minusDays(EXPIRE_DAYS)))) {
             ipService.update(ip);
         }
-        return ipMapper.toDto(ip);
+        return ipMapper.toDto(ipRepository.save(ip));
     }
 
     @Override
@@ -89,7 +90,7 @@ public class IpServiceImpl implements IpService {
     @Override
     @Transactional
     public void update(Ip ip) {
-        if (!updateByIpwho(ip) || !updateByIpapi(ip)) {
+        if (!updateByIpwho(ip) && !updateByIpapi(ip)) {
             log.error("Failed to update ip {}", ip.getIp());
         }
     }
@@ -103,7 +104,7 @@ public class IpServiceImpl implements IpService {
             addHistory(ip, IpSource.IPWHO, objectMapper.writeValueAsString(response));
             return true;
         } catch (Exception e) {
-            log.info("Can't load ip info by ipwho service: {}", e.getMessage());
+            log.error("Can't load ip info by ipwho service: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -117,7 +118,7 @@ public class IpServiceImpl implements IpService {
             addHistory(ip, IpSource.IPAPI, objectMapper.writeValueAsString(response));
             return true;
         } catch (Exception e) {
-            log.info("Can't load ip info by ipwho service: {}", e.getMessage());
+            log.error("Can't load ip info by ipapi service: {}", e.getMessage(), e);
             return false;
         }
     }

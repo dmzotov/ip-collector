@@ -1,10 +1,11 @@
 package ru.dmzotov.ipcollector.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmzotov.ipcollector.dto.IpDto;
@@ -33,8 +34,9 @@ public class IpController {
     }
 
     @PostMapping
+    @PageableAsQueryParam
     @Operation(summary = "Search IP addresses")
-    public Page<IpDto> search(@RequestBody IpSearchRequestDto request, @PageableDefault Pageable pageable) {
+    public Page<IpDto> search(@RequestBody IpSearchRequestDto request, @Parameter(hidden = true) Pageable pageable) {
         return ipService.search(request, pageable);
     }
 
