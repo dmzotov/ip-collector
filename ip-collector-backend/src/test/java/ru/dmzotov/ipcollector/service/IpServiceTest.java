@@ -16,15 +16,17 @@ import ru.dmzotov.ipcollector.client.dto.IpwhoResponseDto;
 import ru.dmzotov.ipcollector.dto.IpDto;
 import ru.dmzotov.ipcollector.entity.Ip;
 import ru.dmzotov.ipcollector.entity.RequestHistory;
+import ru.dmzotov.ipcollector.exceptions.IncorrectIpException;
 import ru.dmzotov.ipcollector.mapper.IpMapper;
 import ru.dmzotov.ipcollector.mapper.RequestHistoryMapper;
 import ru.dmzotov.ipcollector.repository.IpRepository;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -53,11 +55,11 @@ public class IpServiceTest {
     @BeforeEach
     public void setUp() {
         ReflectionTestUtils.setField(ipService, "ipService", ipService);
-        when(ipRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
     public void testCreateIp() {
+        when(ipRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(ipRepository.findById(eq(TEST_IP_ID))).thenReturn(Optional.empty());
         when(ipwhoClient.getIpInfo(eq(TEST_IP))).thenThrow(new RuntimeException());
         when(ipapiClient.getIpInfo(eq(TEST_IP))).thenReturn(IpapiResponseDto.builder()
@@ -86,8 +88,10 @@ public class IpServiceTest {
                 .countryName("Some old name")
                 .created(LocalDateTime.now())
                 .updated(LocalDateTime.MIN)
-                .history(Collections.singletonList(new RequestHistory()))
+                .history(new ArrayList<>())
                 .build();
+        existingIp.getHistory().add(new RequestHistory());
+        when(ipRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(ipRepository.findById(eq(TEST_IP_ID))).thenReturn(Optional.of(existingIp));
         when(ipwhoClient.getIpInfo(eq(TEST_IP))).thenReturn(IpwhoResponseDto.builder()
                 .country("United States of America")
@@ -115,13 +119,11 @@ public class IpServiceTest {
                 .countryName("Some old name")
                 .created(LocalDateTime.now())
                 .updated(LocalDateTime.now())
-                .history(Collections.singletonList(new RequestHistory()))
+                .history(new ArrayList<>())
                 .build();
+        existingIp.getHistory().add(new RequestHistory());
+        when(ipRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(ipRepository.findById(eq(TEST_IP_ID))).thenReturn(Optional.of(existingIp));
-        when(ipwhoClient.getIpInfo(eq(TEST_IP))).thenReturn(IpwhoResponseDto.builder()
-                .country("United States of America")
-                .countryCode("US")
-                .build());
         when(ipMapper.toDto(any())).thenAnswer(invocation -> {
             Ip result = invocation.getArgument(0);
             assertEquals(TEST_IP_ID, result.getId());
@@ -133,5 +135,12 @@ public class IpServiceTest {
         });
         ipService.getIp(TEST_IP, false);
         verify(ipMapper).toDto(any());
+    }
+
+    @Test
+    public void testIncorrectIp() {
+        assertThrows(IncorrectIpException.class, () -> ipService.getIp("8.8.8.", false));
+        assertThrows(IncorrectIpException.class, () -> ipService.getIp("", false));
+        assertThrows(IncorrectIpException.class, () -> ipService.getIp(null, false));
     }
 }
